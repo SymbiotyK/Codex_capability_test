@@ -9,6 +9,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter
 
 LATITUDE = 51.1079
 LONGITUDE = 17.0385
@@ -74,15 +75,27 @@ def slice_temperature_window(
     return sliced_times, sliced_temps
 
 
-def plot_temperature_window(timestamps: list[datetime], temperatures: list[float]) -> None:
+def plot_temperature_window(
+    timestamps: list[datetime],
+    temperatures: list[float],
+    current_time: datetime,
+) -> None:
     """Plot temperatures for the selected time window."""
     if not timestamps:
         raise RuntimeError("No data available for the selected time window.")
 
-    plt.figure(figsize=(10, 5))
-    plt.plot(timestamps, temperatures, marker="o", linewidth=2)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    line_color = "#f7d000"
+    ax.plot(timestamps, temperatures, marker="o", linewidth=2, color=line_color)
+    min_temp = min(temperatures)
+    max_temp = max(temperatures)
+    lower_bound = min(min_temp, 0)
+    upper_bound = max(max_temp, 0)
+    ax.axhspan(lower_bound, 0, facecolor="#0b2a5b", alpha=0.25, zorder=0)
+    ax.axhspan(0, upper_bound, facecolor="#ffd8a8", alpha=0.35, zorder=0)
+    ax.axvline(current_time, color="black", linewidth=2, linestyle="-", zorder=3)
     for timestamp, temperature in zip(timestamps, temperatures):
-        plt.annotate(
+        ax.annotate(
             f"{temperature:.1f}°C",
             xy=(timestamp, temperature),
             xytext=(0, 6),
@@ -90,12 +103,13 @@ def plot_temperature_window(timestamps: list[datetime], temperatures: list[float
             ha="center",
             fontsize=8,
         )
-    plt.title("Temperatura we Wroclawiu (8h wstecz i 8h naprzod)")
-    plt.xlabel("Czas")
-    plt.ylabel("Temperatura (°C)")
-    plt.grid(True, linestyle="--", alpha=0.6)
-    plt.xticks(rotation=45, ha="right")
-    plt.tight_layout()
+    ax.set_title("Temperatura we Wroclawiu (8h wstecz i 8h naprzod)")
+    ax.set_xlabel("Czas")
+    ax.set_ylabel("Temperatura (°C)")
+    ax.grid(True, linestyle="--", alpha=0.6)
+    ax.xaxis.set_major_formatter(DateFormatter("%d.%m %H:%M"))
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
+    fig.tight_layout()
     plt.show()
 
 
@@ -109,4 +123,4 @@ if __name__ == "__main__":
         all_temps,
         now,
     )
-    plot_temperature_window(window_times, window_temps)
+    plot_temperature_window(window_times, window_temps, now)
