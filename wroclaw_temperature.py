@@ -81,6 +81,15 @@ def plot_temperature_window(timestamps: list[datetime], temperatures: list[float
 
     plt.figure(figsize=(10, 5))
     plt.plot(timestamps, temperatures, marker="o", linewidth=2)
+    for timestamp, temperature in zip(timestamps, temperatures):
+        plt.annotate(
+            f"{temperature:.1f}°C",
+            xy=(timestamp, temperature),
+            xytext=(0, 6),
+            textcoords="offset points",
+            ha="center",
+            fontsize=8,
+        )
     plt.title("Temperatura we Wroclawiu (8h wstecz i 8h naprzod)")
     plt.xlabel("Czas")
     plt.ylabel("Temperatura (°C)")
