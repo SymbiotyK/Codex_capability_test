@@ -9,6 +9,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 LATITUDE = 51.1079
 LONGITUDE = 17.0385
@@ -74,19 +75,34 @@ def slice_temperature_window(
     return sliced_times, sliced_temps
 
 
-def plot_temperature_window(timestamps: list[datetime], temperatures: list[float]) -> None:
+def plot_temperature_window(
+    timestamps: list[datetime],
+    temperatures: list[float],
+    reference_time: datetime,
+) -> None:
     """Plot temperatures for the selected time window."""
     if not timestamps:
         raise RuntimeError("No data available for the selected time window.")
 
-    plt.figure(figsize=(10, 5))
-    plt.plot(timestamps, temperatures, marker="o", linewidth=2)
-    plt.title("Temperatura we Wroclawiu (8h wstecz i 8h naprzod)")
-    plt.xlabel("Czas")
-    plt.ylabel("Temperatura (°C)")
-    plt.grid(True, linestyle="--", alpha=0.6)
-    plt.xticks(rotation=45, ha="right")
-    plt.tight_layout()
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(timestamps, temperatures, marker="o", linewidth=2, color="#f7d038")
+
+    min_temp = min(temperatures)
+    max_temp = max(temperatures)
+    if min_temp < 0:
+        ax.axhspan(min_temp, 0, facecolor="#0b2d5b", alpha=0.25, zorder=0)
+    if max_temp > 0:
+        ax.axhspan(0, max_temp, facecolor="#f6b26b", alpha=0.25, zorder=0)
+
+    ax.axvline(reference_time, color="black", linewidth=2, linestyle="-")
+
+    ax.set_title("Temperatura we Wroclawiu (8h wstecz i 8h naprzod)")
+    ax.set_xlabel("Czas")
+    ax.set_ylabel("Temperatura (°C)")
+    ax.grid(True, linestyle="--", alpha=0.6)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d.%m %H:%M"))
+    fig.autofmt_xdate(rotation=45, ha="right")
+    fig.tight_layout()
     plt.show()
 
 
@@ -100,4 +116,4 @@ if __name__ == "__main__":
         all_temps,
         now,
     )
-    plot_temperature_window(window_times, window_temps)
+    plot_temperature_window(window_times, window_temps, now)
