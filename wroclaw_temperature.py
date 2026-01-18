@@ -115,7 +115,6 @@ def plot_temperature_window(
 
 if __name__ == "__main__":
     temperature = fetch_current_temperature()
-    print(f"Aktualna temperatura we Wroclawiu: {temperature:.1f}°C")
     all_times, all_temps = fetch_hourly_temperatures()
     now = datetime.now().replace(minute=0, second=0, microsecond=0)
     window_times, window_temps = slice_temperature_window(
